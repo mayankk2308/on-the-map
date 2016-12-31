@@ -15,24 +15,24 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     //UI - Manage Activity view and map view
     
-    override func viewWillAppear(animated: Bool) {
-        appdelegate=UIApplication.sharedApplication().delegate as! AppDelegate
+    override func viewWillAppear(_ animated: Bool) {
+        appdelegate=UIApplication.shared.delegate as! AppDelegate
         self.map.delegate=self
         if(appdelegate.studentInfo.isEmpty){
-            self.activity.hidden=false
-            self.tempView.hidden=false
+            self.activity.isHidden=false
+            self.tempView.isHidden=false
             self.activity.startAnimating()
             if(Reachability.isConnectedToNetwork()){
                 studentData.getStudentData(){(success, error) in
-                    dispatch_async(dispatch_get_main_queue()){
+                    DispatchQueue.main.async{
                         if !success {
-                            dispatch_async(dispatch_get_main_queue()){
+                            DispatchQueue.main.async{
                                 self.activityHandler()
-                                self.displayError("Download Failed", message: error)
+                                self.displayError("Download Failed", message: error!)
                             }
                         }
                         else {
-                            dispatch_async(dispatch_get_main_queue()){
+                            DispatchQueue.main.async{
                                 self.activityHandler()
                                 self.addAnnotations()
                             }
@@ -41,7 +41,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
                 }
             }
             else {
-                dispatch_async(dispatch_get_main_queue()){
+                DispatchQueue.main.async{
                     self.activityHandler()
                     self.displayError("Download Failed", message: "Please check your internet connection and try again.")
                 }
@@ -49,13 +49,13 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         if annotations.isEmpty {
             self.addAnnotations()
         }
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         if !annotations.isEmpty {
             self.map.removeAnnotations(self.annotations)
             self.annotations = [MKPointAnnotation]()
@@ -65,14 +65,14 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     func activityHandler() {
         self.activity.stopAnimating()
-        self.tempView.hidden=true
+        self.tempView.isHidden=true
     }
     
     
-    func displayError(title: String, message: String){
-        let alert=UIAlertController(title: title, message: message, preferredStyle:  UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    func displayError(_ title: String, message: String){
+        let alert=UIAlertController(title: title, message: message, preferredStyle:  UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     //Student Locations - Process and display student locations on a map
@@ -89,24 +89,24 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         self.map.addAnnotations(annotations)
     }
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseid="studentPin"
-        var annotationView=mapView.dequeueReusableAnnotationViewWithIdentifier(reuseid) as! MKPinAnnotationView!
+        var annotationView=mapView.dequeueReusableAnnotationView(withIdentifier: reuseid) as! MKPinAnnotationView!
         if annotationView == nil {
             annotationView=MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseid)
-            annotationView.canShowCallout=true
-            annotationView.animatesDrop=true
-            annotationView.rightCalloutAccessoryView=UIButton(type: UIButtonType.InfoLight)
+            annotationView?.canShowCallout=true
+            annotationView?.animatesDrop=true
+            annotationView?.rightCalloutAccessoryView=UIButton(type: UIButtonType.infoLight)
         }
         else {
-            annotationView.annotation=annotation
+            annotationView?.annotation=annotation
         }
         return annotationView
     }
     
-    func mapView(mapView: MKMapView,annotationView view: MKAnnotationView,calloutAccessoryControlTapped control: UIControl){
-        if UIApplication.sharedApplication().canOpenURL(NSURL(string: view.annotation!.subtitle!!)!) {
-            UIApplication.sharedApplication().openURL(NSURL(string: view.annotation!.subtitle!!)!)
+    func mapView(_ mapView: MKMapView,annotationView view: MKAnnotationView,calloutAccessoryControlTapped control: UIControl){
+        if UIApplication.shared.canOpenURL(URL(string: view.annotation!.subtitle!!)!) {
+            UIApplication.shared.openURL(URL(string: view.annotation!.subtitle!!)!)
         }
         else {
             self.displayError("URL Invalid", message: "Cannot open URL because it is invalid.")

@@ -13,7 +13,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     var backgroundGradient: CAGradientLayer? = nil
     var usedNext=false
     let udacityAccount=UdacityLogin()
-    let appdelegate=UIApplication.sharedApplication().delegate as! AppDelegate!
+    let appdelegate=UIApplication.shared.delegate as! AppDelegate!
     var tapRecognizer:UITapGestureRecognizer?=nil
     
     
@@ -22,37 +22,37 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     //UI - Manage UI elements and keyboard
     
-    override func viewWillAppear(animated: Bool) {
-        self.signup.hidden = false
-        self.login.enabled = true
-        self.view.backgroundColor = UIColor.clearColor()
-        let colorTop = UIColor(red: 1.0, green: 0.6, blue: 0.3, alpha: 1.0).CGColor
-        let colorBottom = UIColor(red: 1.0, green: 0.3, blue: 0.2, alpha: 1.0).CGColor
+    override func viewWillAppear(_ animated: Bool) {
+        self.signup.isHidden = false
+        self.login.isEnabled = true
+        self.view.backgroundColor = UIColor.clear
+        let colorTop = UIColor(red: 1.0, green: 0.6, blue: 0.3, alpha: 1.0).cgColor
+        let colorBottom = UIColor(red: 1.0, green: 0.3, blue: 0.2, alpha: 1.0).cgColor
         self.backgroundGradient = CAGradientLayer()
         self.backgroundGradient!.colors = [colorTop, colorBottom]
         self.backgroundGradient!.locations = [0.0, 1.0]
         self.backgroundGradient!.frame = view.frame
-        self.view.layer.insertSublayer(self.backgroundGradient!, atIndex: 0)
-        activityIndicator.hidden=true
+        self.view.layer.insertSublayer(self.backgroundGradient!, at: 0)
+        activityIndicator.isHidden=true
         self.activityIndicator.hidesWhenStopped=true
         email.delegate=self
         pass.delegate=self
-        tapRecognizer = UITapGestureRecognizer(target: self, action: "handleSingleTap:")
+        tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(LoginViewController.handleSingleTap(_:)))
         tapRecognizer?.numberOfTapsRequired=1
         self.addKeyboardDismissRecognizer()
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.removeKeyboardDismissRecognizer()
     }
     
-    override func viewDidDisappear(animated: Bool) {
-        login.hidden=false
+    override func viewDidDisappear(_ animated: Bool) {
+        login.isHidden=false
     }
 
-    @IBAction func signUp(sender: UIButton) {
-        let url=NSURL(string: "https://www.udacity.com/account/auth#!/signin")!
-        UIApplication.sharedApplication().openURL(url)
+    @IBAction func signUp(_ sender: UIButton) {
+        let url=URL(string: "https://www.udacity.com/account/auth#!/signin")!
+        UIApplication.shared.openURL(url)
     }
     
     //--------------------------------------*/
@@ -60,11 +60,11 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     //Login - Initiate and handle login to Udacity account
     
-    @IBAction func initiateLogin(sender: UIButton) {
+    @IBAction func initiateLogin(_ sender: UIButton) {
         self.view.endEditing(true)
         view.frame.origin.y=0
         if(!email.text!.isEmpty && !pass.text!.isEmpty){
-            self.signup.hidden = true
+            self.signup.isHidden = true
             initiateLogin()
             }
         else {
@@ -74,15 +74,15 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     
     func initiateLogin(){
-        login.hidden=true
-        activityIndicator.hidden=false
+        login.isHidden=true
+        activityIndicator.isHidden=false
         self.activityIndicator.startAnimating()
-        email.enabled=false
-        pass.enabled=false
+        email.isEnabled=false
+        pass.isEnabled=false
         if Reachability.isConnectedToNetwork() {
             udacityAccount.loginWithCredentials(email.text, password: pass.text) {(success, key, error) in
                 if success {
-                    self.appdelegate.udacitykey=key
+                    self.appdelegate?.udacitykey=key
                     self.completeLogin()
                 }
                 else {
@@ -96,25 +96,25 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     }
     
         func completeLogin(){
-            dispatch_async(dispatch_get_main_queue()){
+            DispatchQueue.main.async{
                 self.activityIndicator.stopAnimating()
-                self.activityIndicator.hidden=true
-                let controller=self.storyboard?.instantiateViewControllerWithIdentifier("Nav") as! UINavigationController!
-                self.presentViewController(controller, animated: true, completion: nil)
+                self.activityIndicator.isHidden=true
+                let controller=self.storyboard?.instantiateViewController(withIdentifier: "Nav") as! UINavigationController!
+                self.present(controller!, animated: true, completion: nil)
             }
         }
         
-    func errorAlert(message: String!){
-            dispatch_async(dispatch_get_main_queue()){
+    func errorAlert(_ message: String!){
+            DispatchQueue.main.async{
                 self.activityIndicator.stopAnimating()
-                self.login.hidden=false
-                let alert=UIAlertController(title: "Login Failed", message: message, preferredStyle:  UIAlertControllerStyle.Alert)
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
-                self.activityIndicator.hidden=true
-                self.login.hidden=false
-                self.email.enabled=true
-                self.pass.enabled=true
+                self.login.isHidden=false
+                let alert=UIAlertController(title: "Login Failed", message: message, preferredStyle:  UIAlertControllerStyle.alert)
+                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+                self.activityIndicator.isHidden=true
+                self.login.isHidden=false
+                self.email.isEnabled=true
+                self.pass.isEnabled=true
             }
         }
     
@@ -124,37 +124,37 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     //Keyboard - manage keyboard settings
     
-    func textFieldDidBeginEditing(textField: UITextField) {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         subscribeToKeyboardNotifications()
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         unsubscribeToKeyboardNotifications()
     }
     
     func subscribeToKeyboardNotifications(){//subscribe to keyboard notifications
-        NSNotificationCenter.defaultCenter().addObserver(self,selector: "keyboardWillShow:",name: UIKeyboardWillShowNotification,object:nil)
-        NSNotificationCenter.defaultCenter().addObserver(self,selector: "keyboardWillHide:",name: UIKeyboardWillHideNotification,object:nil)
+        NotificationCenter.default.addObserver(self,selector: #selector(LoginViewController.keyboardWillShow(_:)),name: NSNotification.Name.UIKeyboardWillShow,object:nil)
+        NotificationCenter.default.addObserver(self,selector: #selector(LoginViewController.keyboardWillHide(_:)),name: NSNotification.Name.UIKeyboardWillHide,object:nil)
     }
     
     func unsubscribeToKeyboardNotifications(){//unsubscribe to keyboard notifications
-        NSNotificationCenter.defaultCenter().removeObserver(self,name: UIKeyboardWillShowNotification,object:nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self,name: UIKeyboardWillHideNotification,object:nil)
+        NotificationCenter.default.removeObserver(self,name: NSNotification.Name.UIKeyboardWillShow,object:nil)
+        NotificationCenter.default.removeObserver(self,name: NSNotification.Name.UIKeyboardWillHide,object:nil)
     }
     
-    func keyboardWillShow(notification: NSNotification){//adjust view when the keyboard shows
+    func keyboardWillShow(_ notification: Notification){//adjust view when the keyboard shows
         if(view.frame.origin.y==0){
             view.frame.origin.y-=110
         }
     }
     
-    func keyboardWillHide(notification: NSNotification){//adjust view when the keyboard hides
+    func keyboardWillHide(_ notification: Notification){//adjust view when the keyboard hides
         if(view.frame.origin.y == -110){
             view.frame.origin.y+=110
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {//functional keyboard return key
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {//functional keyboard return key
         if(textField==email){
             unsubscribeToKeyboardNotifications()
             textField.resignFirstResponder()
@@ -167,10 +167,10 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             view.frame.origin.y=0
             if(email.text!.isEmpty){
                 errorAlert("Please check your username and password once again.")
-                self.signup.hidden = false
+                self.signup.isHidden = false
             }
             else {
-                self.signup.hidden = true
+                self.signup.isHidden = true
                 initiateLogin()
             }
             return false
@@ -192,7 +192,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         self.view.removeGestureRecognizer(tapRecognizer!)
     }
     
-    func handleSingleTap(recognizer: UITapGestureRecognizer) {
+    func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
         self.view.endEditing(true)
     }
 }

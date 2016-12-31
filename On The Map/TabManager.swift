@@ -9,49 +9,49 @@ class TabManager: UITabBarController {
     
     //UI - Manage navigation and tab bar item colors
     
-    override func viewWillAppear(animated: Bool) {
-        self.pin.enabled = true
-        self.logoutButton.enabled = true
-        self.tabBarItem.enabled = true
-        self.view.userInteractionEnabled = true
-        self.navigationItem.leftBarButtonItem?.setTitleTextAttributes([NSFontAttributeName: UIFont(name: "AvenirNext-Regular", size: 18)!], forState: UIControlState.Normal)
-        self.navigationItem.leftBarButtonItem?.tintColor=UIColor.purpleColor()
-        self.navigationItem.rightBarButtonItem?.tintColor=UIColor.purpleColor()
+    override func viewWillAppear(_ animated: Bool) {
+        self.pin.isEnabled = true
+        self.logoutButton.isEnabled = true
+        self.tabBarItem.isEnabled = true
+        self.view.isUserInteractionEnabled = true
+        self.navigationItem.leftBarButtonItem?.setTitleTextAttributes([NSFontAttributeName: UIFont(name: "AvenirNext-Regular", size: 18)!], for: UIControlState())
+        self.navigationItem.leftBarButtonItem?.tintColor=UIColor.purple
+        self.navigationItem.rightBarButtonItem?.tintColor=UIColor.purple
         navigationController?.navigationBar.titleTextAttributes=[NSFontAttributeName:UIFont(name: "AvenirNext-Medium", size: 18)!]
         let appearance=UITabBarItem.appearance()
-        appearance.setTitleTextAttributes([NSFontAttributeName:UIFont(name: "AvenirNext-Medium", size: 11.5)!], forState: .Normal)
+        appearance.setTitleTextAttributes([NSFontAttributeName:UIFont(name: "AvenirNext-Medium", size: 11.5)!], for: UIControlState())
         let bar=UITabBar.appearance()
-        bar.tintColor=UIColor.purpleColor()
+        bar.tintColor=UIColor.purple
     }
     
     //Post - post user location
     
-    @IBAction func postLocation(sender: UIBarButtonItem) {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("postInfo") as! PostLocationViewController!
-        self.presentViewController(controller, animated: true, completion: nil)
+    @IBAction func postLocation(_ sender: UIBarButtonItem) {
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "postInfo") as! PostLocationViewController!
+        self.present(controller!, animated: true, completion: nil)
     }
-    @IBAction func logout(sender: UIBarButtonItem) {
+    @IBAction func logout(_ sender: UIBarButtonItem) {
         let udacitylogut=UdacityLogin()
         if(Reachability.isConnectedToNetwork()){
-            self.pin.enabled = false
-            self.logoutButton.enabled = false
-            self.tabBarItem.enabled = false
-            self.view.userInteractionEnabled = false
+            self.pin.isEnabled = false
+            self.logoutButton.isEnabled = false
+            self.tabBarItem.isEnabled = false
+            self.view.isUserInteractionEnabled = false
             self.navigationItem.title="Logging Out..."
             udacitylogut.logout(){(success) in
-                dispatch_async(dispatch_get_main_queue()){
+                DispatchQueue.main.async{
                     if success {
-                        let appdelegate=UIApplication.sharedApplication().delegate as! AppDelegate
+                        let appdelegate=UIApplication.shared.delegate as! AppDelegate
                         appdelegate.studentInfo = [StudentInformation]()
                         appdelegate.firstName = nil
-                        self.dismissViewControllerAnimated(true, completion: nil)
+                        self.dismiss(animated: true, completion: nil)
                     }
                     else {
                         self.navigationItem.title="On The Map"
-                        self.pin.enabled = true
-                        self.logoutButton.enabled = true
-                        self.tabBarItem.enabled = true
-                        self.view.userInteractionEnabled = true
+                        self.pin.isEnabled = true
+                        self.logoutButton.isEnabled = true
+                        self.tabBarItem.isEnabled = true
+                        self.view.isUserInteractionEnabled = true
                         self.errorAlert("Server error. Unable to logout.")
                     }
                 }
@@ -62,10 +62,10 @@ class TabManager: UITabBarController {
         }
     }
     
-    func errorAlert(message: String!){
-        let alert=UIAlertController(title: "Logout Failed", message: message, preferredStyle:  UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    func errorAlert(_ message: String!){
+        let alert=UIAlertController(title: "Logout Failed", message: message, preferredStyle:  UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
 }
 

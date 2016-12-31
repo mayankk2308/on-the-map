@@ -14,16 +14,16 @@ class PostMapViewController: UIViewController, UITextFieldDelegate, MKMapViewDel
     
     //UI - Manage activity indicator and text field
     
-    override func viewWillAppear(animated: Bool) {
-        self.activity.hidden = true
-        appdelegate = UIApplication.sharedApplication().delegate as! AppDelegate!
-        touchRecognizer = UITapGestureRecognizer(target: self, action: "handleSingleTap:")
+    override func viewWillAppear(_ animated: Bool) {
+        self.activity.isHidden = true
+        appdelegate = UIApplication.shared.delegate as! AppDelegate!
+        touchRecognizer = UITapGestureRecognizer(target: self, action: #selector(PostMapViewController.handleSingleTap(_:)))
         urlField.delegate = self
         urlField.font = UIFont (name: "Roboto-Regular", size: 18)
-        urlField.attributedPlaceholder = NSAttributedString(string: "Enter URL here.", attributes: [NSForegroundColorAttributeName: UIColor.lightTextColor()])
+        urlField.attributedPlaceholder = NSAttributedString(string: "Enter URL here.", attributes: [NSForegroundColorAttributeName: UIColor.lightText])
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         if Reachability.isConnectedToNetwork() {
             self.addAnnotation()
         }
@@ -34,30 +34,30 @@ class PostMapViewController: UIViewController, UITextFieldDelegate, MKMapViewDel
     
     //User Location - Post user location and URL to server
     
-    @IBAction func postLocation(sender: UIButton) {
+    @IBAction func postLocation(_ sender: UIButton) {
         if self.urlField.text!.isEmpty {
             self.displayAlert("Cannot Post Data", message: "Please enter a URL.")
         }
-        else if UIApplication.sharedApplication().canOpenURL(NSURL(string: self.urlField.text!)!) {
+        else if UIApplication.shared.canOpenURL(URL(string: self.urlField.text!)!) {
             if Reachability.isConnectedToNetwork() {
-                self.activity.hidden = false
+                self.activity.isHidden = false
                 self.activity.startAnimating()
                 StudentLocation().postStudentLocation() { success, error in
                     if success {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        DispatchQueue.main.async {
                             self.activity.stopAnimating()
-                            self.activity.hidden = true
+                            self.activity.isHidden = true
                             self.appdelegate.studentInfo = [StudentInformation]()
                             StudentLocation().getStudentData(){ success, error in
                                 return
                             }
-                            self.dismissViewControllerAnimated(true, completion: nil)
+                            self.dismiss(animated: true, completion: nil)
                         }
                     }
                     else {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        DispatchQueue.main.async {
                             self.activity.stopAnimating()
-                            self.activity.hidden = true
+                            self.activity.isHidden = true
                             self.displayAlert("Post Failed", message: error)
                         }
                     }
@@ -73,14 +73,14 @@ class PostMapViewController: UIViewController, UITextFieldDelegate, MKMapViewDel
         
     }
     
-    @IBAction func dismissView(sender: UIButton) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func dismissView(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: nil)
     }
     
-    func displayAlert(title: String!, message: String!) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    func displayAlert(_ title: String!, message: String!) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     //Map - Show user map annotation preview
@@ -95,36 +95,36 @@ class PostMapViewController: UIViewController, UITextFieldDelegate, MKMapViewDel
         self.map.addAnnotation(annotation)
     }
     
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseid="studentPin"
-        var annotationView=mapView.dequeueReusableAnnotationViewWithIdentifier(reuseid) as! MKPinAnnotationView!
+        var annotationView=mapView.dequeueReusableAnnotationView(withIdentifier: reuseid) as! MKPinAnnotationView!
         if annotationView == nil {
             annotationView=MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseid)
-            annotationView.canShowCallout=true
-            annotationView.animatesDrop=true
-            annotationView.rightCalloutAccessoryView=UIButton(type: UIButtonType.InfoLight)
+            annotationView?.canShowCallout=true
+            annotationView?.animatesDrop=true
+            annotationView?.rightCalloutAccessoryView=UIButton(type: UIButtonType.infoLight)
         }
         else {
-            annotationView.annotation=annotation
+            annotationView?.annotation=annotation
         }
         return annotationView
     }
     
     //Textfield - Manage textfield and keyboard
     
-    func textFieldDidBeginEditing(textField: UITextField) {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         self.view.addGestureRecognizer(self.touchRecognizer)
         urlField.placeholder = ""
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         self.view.removeGestureRecognizer(self.touchRecognizer)
         if textField.text!.isEmpty {
-            self.post.enabled = false
-            urlField.attributedPlaceholder = NSAttributedString(string: "Enter your place.", attributes: [NSForegroundColorAttributeName: UIColor.lightTextColor()])
+            self.post.isEnabled = false
+            urlField.attributedPlaceholder = NSAttributedString(string: "Enter your place.", attributes: [NSForegroundColorAttributeName: UIColor.lightText])
         }
         else {
-            if UIApplication.sharedApplication().canOpenURL(NSURL(string: textField.text!)!) {
+            if UIApplication.shared.canOpenURL(URL(string: textField.text!)!) {
                 appdelegate.url = textField.text
             }
             else {
@@ -133,12 +133,12 @@ class PostMapViewController: UIViewController, UITextFieldDelegate, MKMapViewDel
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         return true
     }
     
-    func handleSingleTap(sender: UITapGestureRecognizer) {
+    func handleSingleTap(_ sender: UITapGestureRecognizer) {
         self.view.endEditing(true)
     }
 }

@@ -18,42 +18,42 @@ class PostLocationViewController: UIViewController, UITextFieldDelegate {
     
     //UI - Manage buttons and textfields
     
-    override func viewWillAppear(animated: Bool) {
-        self.locationField.enabled = false
-        self.findOnMap.hidden = true
-        self.activity.hidden = true
+    override func viewWillAppear(_ animated: Bool) {
+        self.locationField.isEnabled = false
+        self.findOnMap.isHidden = true
+        self.activity.isHidden = true
         self.findOnMap.titleLabel?.font = UIFont(name: "Roboto-Regular", size: 15)
         self.cancel.titleLabel?.font = UIFont(name: "Roboto-Regular", size: 15)
-        self.tapGestureRecognizer=UITapGestureRecognizer(target: self, action: "handleSingleTap:")
+        self.tapGestureRecognizer=UITapGestureRecognizer(target: self, action: #selector(PostLocationViewController.handleSingleTap(_:)))
         self.locationField.delegate = self
         whereLabel.font = UIFont(name: "Roboto-Thin", size: 24)!
         studyingLabel.font = UIFont(name: "Roboto-Medium", size: 24)!
         todayLabel.font = UIFont(name: "Roboto-Thin", size: 24)!
         locationField.font = UIFont(name: "Roboto-Regular", size: 18)!
-        locationField.attributedPlaceholder = NSAttributedString(string: "Enter your location here.", attributes: [NSForegroundColorAttributeName: UIColor.lightTextColor()])
-        appdelegate = UIApplication.sharedApplication().delegate as! AppDelegate!
+        locationField.attributedPlaceholder = NSAttributedString(string: "Enter your location here.", attributes: [NSForegroundColorAttributeName: UIColor.lightText])
+        appdelegate = UIApplication.shared.delegate as! AppDelegate!
         if appdelegate.firstName != nil {
-            self.findOnMap.hidden = false
+            self.findOnMap.isHidden = false
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
-        appdelegate = UIApplication.sharedApplication().delegate as! AppDelegate!
+    override func viewDidAppear(_ animated: Bool) {
+        appdelegate = UIApplication.shared.delegate as! AppDelegate!
         if appdelegate.firstName == nil {
-            self.activity.hidden = false
+            self.activity.isHidden = false
             self.activity.startAnimating()
             if Reachability.isConnectedToNetwork() {
                 self.udacityInfo.getUserData(appdelegate.udacitykey) {(success, firstName, lastName, error) in
                     if success {
-                        dispatch_async(dispatch_get_main_queue()) {
-                            self.locationField.enabled = true
+                        DispatchQueue.main.async {
+                            self.locationField.isEnabled = true
                             self.manageActivity()
                             self.appdelegate.firstName = firstName
                             self.appdelegate.lastName = lastName
                         }
                     }
                     else {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        DispatchQueue.main.async {
                             self.manageActivity()
                             self.errorAlert("Download Failed", message: error)
                         }
@@ -63,18 +63,18 @@ class PostLocationViewController: UIViewController, UITextFieldDelegate {
             else {
                 self.errorAlert("Download Failed", message: "Please check your internet connection and try again.")
                 self.activity.stopAnimating()
-                self.activity.hidden = true
+                self.activity.isHidden = true
             }
         }
         else {
             self.manageActivity()
-            self.locationField.enabled = true
+            self.locationField.isEnabled = true
         }
     }
     
     //Geocoding - Initiate geocoding of string
     
-    @IBAction func initiateGeocoding(sender: UIButton) {
+    @IBAction func initiateGeocoding(_ sender: UIButton) {
         if locationField.text!.isEmpty {
             self.errorAlert("Cannot Find Location", message: "Please enter a location before searching for it on the map.")
         }
@@ -84,24 +84,24 @@ class PostLocationViewController: UIViewController, UITextFieldDelegate {
     }
     
     func startGeocoding() {
-        self.findOnMap.hidden = true
-        self.activity.hidden = false
+        self.findOnMap.isHidden = true
+        self.activity.isHidden = false
         self.activity.startAnimating()
         if Reachability.isConnectedToNetwork() {
             self.geocodeString(locationField.text) { (error, lat, lon) in
                 if error == nil {
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         self.appdelegate.mapString = self.locationField.text
                         self.appdelegate.geolat = lat
                         self.appdelegate.geolon = lon
                         self.activity.stopAnimating()
-                        self.activity.hidden = true
-                        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("postMap") as! PostMapViewController!
-                        self.presentViewController(controller, animated: false, completion: nil)
+                        self.activity.isHidden = true
+                        let controller = self.storyboard?.instantiateViewController(withIdentifier: "postMap") as! PostMapViewController!
+                        self.present(controller!, animated: false, completion: nil)
                     }
                 }
                 else {
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         self.manageActivity()
                         self.errorAlert("Download Failed", message: error)
                     }
@@ -115,14 +115,14 @@ class PostLocationViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func geocodeString(string: String!, completionHandler: (error: String!, lat: CLLocationDegrees!, lon: CLLocationDegrees!) -> Void) {
+    func geocodeString(_ string: String!, completionHandler: @escaping (_ error: String?, _ lat: CLLocationDegrees?, _ lon: CLLocationDegrees?) -> Void) {
         CLGeocoder().geocodeAddressString(string, completionHandler: { (placemark, error) in
             if error != nil {
-                completionHandler(error: error!.localizedDescription, lat: nil, lon: nil)
+                completionHandler(error!.localizedDescription, nil, nil)
             }
             else {
                 let place = placemark![0]
-                completionHandler(error: nil, lat: place.location!.coordinate.latitude, lon: place.location!.coordinate.longitude)
+                completionHandler(nil, place.location!.coordinate.latitude, place.location!.coordinate.longitude)
             }
         })
     }
@@ -131,67 +131,67 @@ class PostLocationViewController: UIViewController, UITextFieldDelegate {
     
     
     func subscribeToKeyboardNotifications(){//subscribe to keyboard notifications
-        NSNotificationCenter.defaultCenter().addObserver(self,selector: "keyboardWillShow:",name: UIKeyboardWillShowNotification,object:nil)
-        NSNotificationCenter.defaultCenter().addObserver(self,selector: "keyboardWillHide:",name: UIKeyboardWillHideNotification,object:nil)
+        NotificationCenter.default.addObserver(self,selector: #selector(PostLocationViewController.keyboardWillShow(_:)),name: NSNotification.Name.UIKeyboardWillShow,object:nil)
+        NotificationCenter.default.addObserver(self,selector: #selector(PostLocationViewController.keyboardWillHide(_:)),name: NSNotification.Name.UIKeyboardWillHide,object:nil)
     }
     
     func unsubscribeToKeyboardNotifications(){//unsubscribe to keyboard notifications
-        NSNotificationCenter.defaultCenter().removeObserver(self,name: UIKeyboardWillShowNotification,object:nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self,name: UIKeyboardWillHideNotification,object:nil)
+        NotificationCenter.default.removeObserver(self,name: NSNotification.Name.UIKeyboardWillShow,object:nil)
+        NotificationCenter.default.removeObserver(self,name: NSNotification.Name.UIKeyboardWillHide,object:nil)
     }
     
-    func keyboardWillShow(notification: NSNotification){//adjust view when the keyboard shows
+    func keyboardWillShow(_ notification: Notification){//adjust view when the keyboard shows
         if(view.frame.origin.y==0){
             view.frame.origin.y-=35
         }
     }
     
-    func keyboardWillHide(notification: NSNotification){//adjust view when the keyboard hides
+    func keyboardWillHide(_ notification: Notification){//adjust view when the keyboard hides
         if(view.frame.origin.y == -35){
             view.frame.origin.y+=35
         }
     }
     
-    @IBAction func returnToOtherStudentPosView(sender: UIButton) {
+    @IBAction func returnToOtherStudentPosView(_ sender: UIButton) {
         self.view.endEditing(true)
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     func manageActivity() {
         self.activity.stopAnimating()
-        self.activity.hidden = true
-        self.findOnMap.hidden = false
+        self.activity.isHidden = true
+        self.findOnMap.isHidden = false
     }
     
-    func errorAlert(title: String!, message: String!) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    func errorAlert(_ title: String!, message: String!) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     //Textfield - Manage text fields
     
-    func textFieldDidBeginEditing(textField: UITextField) {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         self.subscribeToKeyboardNotifications()
         self.view.addGestureRecognizer(tapGestureRecognizer)
         textField.placeholder=""
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         self.unsubscribeToKeyboardNotifications()
         self.view.removeGestureRecognizer(tapGestureRecognizer)
         if textField.text!.isEmpty {
-            textField.attributedPlaceholder = NSAttributedString(string: "Enter your location here.", attributes: [NSForegroundColorAttributeName: UIColor.lightTextColor()])
+            textField.attributedPlaceholder = NSAttributedString(string: "Enter your location here.", attributes: [NSForegroundColorAttributeName: UIColor.lightText])
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.startGeocoding()
         self.view.endEditing(true)
         return true
     }
     
-    func handleSingleTap(recognizer: UITapGestureRecognizer) {
+    func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
         self.view.endEditing(true)
     }
 }
